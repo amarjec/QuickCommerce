@@ -1,0 +1,7 @@
+<svg width="64" height="64" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="30" cy="30" r="28" stroke="#4CAF50" stroke-width="4" fill="#A5D6A7"></circle>
+  
+  <!-- Lightning bolt for speed -->
+  <path d="M20 15 L35 30 L25 30 L40 45 L25 35 L35 35 L20 20 Z" fill="#2E7D32"></path>
+</svg>
