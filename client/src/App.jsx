@@ -1,8 +1,14 @@
 import React from 'react'
+import Navbar from './components/Navbar'
 
 const App = () => {
   return (
-    <div className='w-full h-screen bg-slate-700 text-white'>App</div>
+    <>
+  
+    <Navbar/>
+    </>
+    
+    
   )
 }
 
