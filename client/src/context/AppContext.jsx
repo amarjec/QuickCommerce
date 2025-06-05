@@ -1,73 +1,85 @@
-import { createContext, useContext, useEffect, useState } from "react"; 
+import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
 
-export const AppContext = createContext(); 
+export const AppContext = createContext();
 
-export const AppContextProvider = ({children})=>{ 
+export const AppContextProvider = ({ children }) => {
+  const currency = import.meta.VITE_CURRENCY || "₹"; // Default currency, can be changed based on user preference
 
-    const currency = import.meta.VITE_CURRENCY || "₹"; // Default currency, can be changed based on user preference
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [isSeller, setIsSeller] = useState(false);
+  const [showUserLogin, setShowUserLogin] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [cartItems, setCartItems] = useState({});
+  const [searchQuery, setSearchQuery] = useState(""); // ✅ FIXED
 
-    const navigate = useNavigate();
-    const [user, setUser] = useState(null); 
-    const [isSeller, setIsSeller] = useState(false);
-    const [showUserLogin, setShowUserLogin] = useState(false);
-    const [products , setProducts] = useState([]);
-    const [cartItems, setCartItems] = useState({}); 
+  // Fetch products from a dummy data source or API
+  // In a real application, you would replace this with an API call
+  const fetchProducts = async () => {
+    setProducts(dummyProducts);
+  };
 
-    // Fetch products from a dummy data source or API
-    // In a real application, you would replace this with an API call
-    const fetchProducts = async () => {
-        setProducts(dummyProducts);
+  // Add Product to Cart
+  const addToCart = (itemId) => {
+    let cartData = structuredClone(cartItems);
+    if (cartData[itemId]) {
+      cartData[itemId] += 1;
+    } else {
+      cartData[itemId] = 1;
     }
+    setCartItems(cartData);
+    toast.success("Added to Cart");
+  };
 
-    // Add Product to Cart 
-    const addToCart = (itemId) => { 
-        let cartData = structuredClone (cartItems); 
-        if(cartData[itemId]) { 
-            cartData[itemId] += 1; 
-        }else{ 
-            cartData[itemId] = 1; 
-        } 
-        setCartItems (cartData); 
-        toast.success("Added to Cart") 
+  // Update Cart Item Quantity
+  const updateCartItem = (itemId, quantity) => {
+    let cartData = structuredClone(cartItems);
+    cartData[itemId] = quantity;
+    setCartItems(cartData);
+    toast.success("Cart Updated");
+  };
+
+  // Remove Product from Cart
+  const removeFromCart = (itemId) => {
+    let cartData = structuredClone(cartItems);
+    if (cartData[itemId]) {
+      cartData[itemId] -= 1;
+      if (cartData[itemId] === 0) {
+        delete cartData[itemId];
+      }
     }
+    toast.success("Removed from Cart");
+    setCartItems(cartData);
+  };
 
-    // Update Cart Item Quantity 
-    const updateCartItem = (itemId, quantity)=>{ 
-        let cartData = structuredClone (cartItems); 
-        cartData[itemId] = quantity; 
-        setCartItems (cartData) 
-        toast.success("Cart Updated") 
-    }
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-    // Remove Product from Cart 
-    const removeFromCart = (itemId)=>{ 
-        let cartData = structuredClone (cartItems); 
-        if(cartData[itemId]){ 
-            cartData[itemId] -= 1; 
-            if(cartData[itemId] === 0){ 
-                delete cartData [itemId]; 
-            } 
-        } 
-        toast.success ("Removed from Cart") 
-        setCartItems (cartData) 
-    }
+  const value = {
+    navigate,
+    user,
+    setUser,
+    isSeller,
+    setIsSeller,
+    showUserLogin,
+    setShowUserLogin,
+    products,
+    currency,
+    addToCart,
+    updateCartItem,
+    removeFromCart,
+    cartItems,
+    searchQuery,
+    setSearchQuery,
+  };
 
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+};
 
-    useEffect(() => {
-        fetchProducts()
-    }, []);
-
-
-    const value = { navigate, user, setUser, isSeller, setIsSeller, showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems };  
-
-    return <AppContext.Provider value={value}> 
-        {children} 
-    </AppContext.Provider> 
-} 
-
-export const useAppContext = ()=>{ 
-    return useContext (AppContext) 
-}
+export const useAppContext = () => {
+  return useContext(AppContext);
+};
