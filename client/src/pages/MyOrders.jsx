@@ -15,8 +15,7 @@ const MyOrders = () => {
         fetchMyOrders();
     }, []);
 
-    const boxIcon = "https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/e-commerce/boxIcon.svg"
-
+   
 
   return (
     <div className='mt-16 pb-16'>
