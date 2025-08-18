@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 4000;
 // Ensure the database connection is established
 await ConnectDB(); 
 
-const allowedOrigins = ['http://localhost:5173', 'https://github.com/amarjec/QuickCommerce'];
+const allowedOrigins = ['http://localhost:5173'];
 
 // Middleware to parse JSON requests
 app.use(express.json());

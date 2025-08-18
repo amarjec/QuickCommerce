@@ -1,109 +1,126 @@
-import User from "../models/User.js"
+import userModel from "../models/userModel.js";
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'
 
+// A reusable constant for setting cookie options
+// It's a good practice to define this once to ensure consistency.
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+};
 
-const register = async (req, res) => {
+const registerUser = async (req, res) => {
     try {
         const {name, email, password} = req.body;
 
+        // Use standard HTTP status codes for better API communication
         if (!name || !email || !password) {
-            return res.json({success: false, message: "Missing Details"});
+            return res.status(400).json({success: false, message: "Missing required fields."});
         }
 
-        const existingUser = await User.findOne({ email });
+        const existingUser = await userModel.findOne({ email });
         if (existingUser) {
-            return res.json({success: false, message: "User already exists."});
+            return res.status(409).json({success: false, message: "User already exists with this email."});
         }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = await User.create({
+        const newUser = new userModel({
             name,
             email,
             password: hashedPassword
         });
+        const user = await newUser.save();
 
-       
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.cookie('token', token, cookieOptions);
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV  === 'production', // Use secure cookies in production
-            sameSite: process.env.NODE_ENV  === 'production' ? 'None' : 'strict', // Adjust sameSite attribute based on environment
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
-
-        return res.json({
+        
+        return res.status(201).json({
             success: true,
-            message: "User registered successfully",
+            message: "User registered and logged in successfully",
             user: {
-                // id: user._id, 
                 name: user.name,
                 email: user.email
             }
         });
 
-
     } catch (error) {
-        console.log(error);
-        res.json({success: false , message: error.message});
+        console.error(error);
+        res.status(500).json({success: false , message: "Something went wrong during registration."});
     }
 };
 
-const login = async (req, res) => {
+const loginUser = async (req, res) => {
     try {
         const {email, password} = req.body;
-        if (!email || !password) {
-            return res.json({success: false, message: "Missing Details"});
+        const user = await userModel.findOne({email});
+
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({success: false, message: "Invalid email or password."});
         }
+    
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.cookie('token', token, cookieOptions);
         
-        // Check if user exists
-        const user = await User.findOne({email});
-
-
-        if (!user) {
-            return res.json({success: false, message: "Invalid Email or Password."});
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.json({success: false, message: "Invalid Email or Password."});
-        }
-
-        // If password matches, generate a token
-        if(isMatch) {
-            const token = jwt.sign({id: user._id}, process.env.JWT_SECRET);
-            return res.json({success: true, token, user: {name: user.name}});
-        } else {
-            return res.json({success: false, message: "Email or Password was incorrect."});
-        }
-
-
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
-
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV  === 'production',
-            sameSite: process.env.NODE_ENV  === 'production' ? 'None' : 'strict', 
-            maxAge: 7 * 24 * 60 * 60 * 1000 
-        });
-
-        return res.json({
+        return res.status(200).json({
             success: true,
-            message: "User registered successfully",
+            message: "User logged in successfully",
             user: {
-                // id: user._id, 
                 name: user.name,
                 email: user.email
             }
         });
-
+        
     } catch (error) {
-        console.log(error);
-        res.json({success: false , message: error.message});
+        console.error(error);
+        res.status(500).json({success: false , message: "Something went wrong during login."});
     }
 };
 
+const isAuth = async (req, res) => {
+    try {
+        // This function relies on a middleware (like userAuth) to attach the user ID to the request object.
+        // It checks if a user is authenticated by verifying that the user ID exists on the request object.
+        if (!req.userId) {
+            return res.status(401).json({ success: false, message: "User not authenticated." });
+        }
+        
+        const user = await userModel.findById(req.userId).select("-password");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
 
-export { register, login };
+        return res.status(200).json({ success: true, user });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ success: false, message: "Something went wrong." });
+    }
+};
+
+const logoutUser = async (req, res) => {
+    try {
+       
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict'
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "User logged out successfully"
+        });
+
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({
+            success: false,
+            message: "Something went wrong during logout."
+        });
+    }
+};
+
+export {registerUser, loginUser, logoutUser, isAuth};

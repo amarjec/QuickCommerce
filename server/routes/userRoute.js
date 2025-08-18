@@ -1,12 +1,13 @@
 import express from 'express'
-import {login, register} from '../controllers/userController.js'
+import {registerUser, loginUser, logoutUser, isAuth} from '../controllers/userController.js'
+import userAuth from '../middlewares/auth.js'
 
 
 const userRouter = express.Router()
 
-userRouter.post('/register', register) 
-userRouter.post('/login', login) 
+userRouter.post('/register', registerUser) 
+userRouter.post('/login', loginUser)
+userRouter.get('/is-auth', userAuth, isAuth) // Corrected to use GET method
+userRouter.post('/logout', userAuth, logoutUser) // Added userAuth middleware
 
 export default userRouter
-
-//  http://localhost:4000/api/user/register
