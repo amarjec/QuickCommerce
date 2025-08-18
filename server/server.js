@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import ConnectDB from './configs/mongdb.js';
 import userRouter from './routes/userRoute.js';
+import sellerRouter from './routes/sellerRoute.js';
+
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -26,7 +28,10 @@ app.use(cors({
 app.get('/', (req, res) => {
   res.send('Welcome to QuickCommerce Server!');
 });
+
 app.use('/api/user', userRouter)
+app.use('/api/seller', sellerRouter)
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
