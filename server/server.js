@@ -7,6 +7,7 @@ import ConnectDB from './configs/mongdb.js';
 import userRouter from './routes/userRoute.js';
 import sellerRouter from './routes/sellerRoute.js';
 import connectCloudinary from './configs/cloudinary.js';
+import productRouter from './routes/productRoute.js';
 
 
 const app = express();
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/user', userRouter)
 app.use('/api/seller', sellerRouter)
+app.use('/api/product', productRouter )
 
 
 app.listen(PORT, () => {
