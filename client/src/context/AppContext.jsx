@@ -22,7 +22,21 @@ export const AppContextProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState({});
   const [searchQuery, setSearchQuery] = useState(""); 
 
-  // fetech seller data if logged in
+  // fetch user
+  const fetchUser = async () => {
+    try {
+      const {data} = await axios.get("/api/user/is-auth");
+      if (data.success) {
+        setUser(data.user);
+        setCartItems(data.user.cartItems || {});
+      }
+    } catch (error) {
+      setUser(null);
+      setCartItems({});
+    }
+  }
+
+  // fetch seller data if logged in
   const fetchSeller = async () => {
     try {
       const {data} = await axios.get("/api/seller/is-auth");
@@ -84,6 +98,7 @@ export const AppContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    fetchUser();
     fetchSeller();
     fetchProducts();
   }, []);
@@ -103,12 +118,13 @@ export const AppContextProvider = ({ children }) => {
     let totalAmount = 0;
     for (const item in cartItems) {
       let itemInfo = products.find((product) => product._id === item);
-      if (cartItems[item] > 0) {
+      if (itemInfo && cartItems[item] > 0) {
         totalAmount += itemInfo.price * cartItems[item];
       }
     }
     return Math.floor(totalAmount * 100) / 100; // Round to two decimal places
   }
+
 
 
 
@@ -132,6 +148,7 @@ export const AppContextProvider = ({ children }) => {
     getCartAmount,
     axios,
     fetchProducts,
+    setCartItems,
 
     
   };
