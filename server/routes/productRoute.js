@@ -6,9 +6,9 @@ import { productList, productById, changeStock, addProduct } from '../controller
 const productRouter = express.Router();
 
 
-productRouter.get('/add', upload.array(["images"]), sellerAuth, addProduct); // Route to add product with images
-productRouter.get('/list', sellerAuth, productList); // Route to list all products
-productRouter.get('/:id', sellerAuth, productById); // Route to get a single product by ID
-productRouter.put('/stock', sellerAuth, changeStock); // Route to change product stock
+productRouter.post('/add', upload.array("images"), sellerAuth, addProduct); // Route to add product with images
+productRouter.get('/list', productList); // Route to list all products
+productRouter.get('/:id',  productById); // Route to get a single product by ID
+productRouter.post('/stock', sellerAuth, changeStock); // Route to change product stock
 
 export default productRouter;

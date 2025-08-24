@@ -7,7 +7,7 @@ export const addProduct = async (req, res) => {
     try {
         let productData = JSON.parse(req.body.productData);
 
-        const images = req.file;
+        const images = req.files;
 
         let imagesUrl = await Promise.all(
             images.map(async (item) => {  
@@ -57,7 +57,7 @@ export const productById = async (req, res) => {
 export const changeStock = async (req, res) => {
     try {
         const { id, inStock } = req.body;
-        await productModel.findByIdAndUpdate(id, { inStock });
+        const product = await productModel.findByIdAndUpdate(id, { inStock });
         res.status(200).json({ success: true, message: "Product stock updated successfully.", product });
     } catch (error) {
         console.log(error.message);
