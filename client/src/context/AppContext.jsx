@@ -1,4 +1,4 @@
-import { createContext, use, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
@@ -28,7 +28,7 @@ export const AppContextProvider = ({ children }) => {
       const {data} = await axios.get("/api/user/is-auth");
       if (data.success) {
         setUser(data.user);
-        setCartItems(data.user.cart || {});
+        setCartItems(data.user.cart);
       } else {
         setUser(null);
         setCartItems({});
@@ -102,12 +102,6 @@ export const AppContextProvider = ({ children }) => {
     setCartItems(cartData);
   };
 
-  useEffect(() => {
-    fetchSeller();
-    fetchUser();
-    fetchProducts();
-  }, []);
-
 
   // handle total cart items count in the header
   const getCartCount = () => {
@@ -131,6 +125,28 @@ export const AppContextProvider = ({ children }) => {
   }
 
 
+  useEffect(() => {
+    fetchSeller();
+    fetchUser();
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const updateCart = async () => {
+      try {
+        const { data } = await axios.post("/api/cart/update", { cartItems });
+        if (!data.success) {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error("Failed to update cart");
+      }
+    }
+    if (user) {
+      updateCart();
+    }
+  }, [cartItems]);
+
 
   const value = {
     navigate,
@@ -152,6 +168,7 @@ export const AppContextProvider = ({ children }) => {
     getCartAmount,
     axios,
     fetchProducts,
+    fetchUser,
 
     
   };
