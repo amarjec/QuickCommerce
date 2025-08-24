@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, use, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
@@ -22,6 +22,24 @@ export const AppContextProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState({});
   const [searchQuery, setSearchQuery] = useState(""); 
 
+  // fetch user auth status and cart data
+ const fetchUser = async () => {
+    try {
+      const {data} = await axios.get("/api/user/is-auth");
+      if (data.success) {
+        setUser(data.user);
+        setCartItems(data.user.cart || {});
+      } else {
+        setUser(null);
+        setCartItems({});
+      }
+    } catch (error) {
+      setUser(null);
+      setCartItems({});
+    }
+ }
+
+
   // fetech seller data if logged in
   const fetchSeller = async () => {
     try {
@@ -36,7 +54,6 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
- 
 
   // Fetch products from a dummy data source or API
   const fetchProducts = async () => {
@@ -87,6 +104,7 @@ export const AppContextProvider = ({ children }) => {
 
   useEffect(() => {
     fetchSeller();
+    fetchUser();
     fetchProducts();
   }, []);
 
