@@ -28,11 +28,10 @@ export const AppContextProvider = ({ children }) => {
       const {data} = await axios.get("/api/user/is-auth");
       if (data.success) {
         setUser(data.user);
-        setCartItems(data.user.cartItems || {});
+        setCartItems(data.user.cartItems);
       }
     } catch (error) {
       setUser(null);
-      setCartItems({});
     }
   }
 
@@ -54,7 +53,7 @@ export const AppContextProvider = ({ children }) => {
   const fetchProducts = async () => {
     try {
       const {data} = await axios.get("/api/product/list");
-      if(data?.success){
+      if(data.success){
         setProducts(data.products);
       } else {
         toast.error(data.message);
@@ -125,6 +124,22 @@ export const AppContextProvider = ({ children }) => {
     return Math.floor(totalAmount * 100) / 100; // Round to two decimal places
   }
 
+  useEffect(() => {
+    const updateCart = async ()=> {
+      try {
+        const {data} = await axios.post("/api/cart/update", {cartItems});
+        if(!data.success) {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }
+
+    if(user){
+      updateCart();
+    }
+  }, [cartItems]) 
 
 
 
