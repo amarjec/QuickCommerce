@@ -22,6 +22,24 @@ export const AppContextProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState({});
   const [searchQuery, setSearchQuery] = useState(""); 
 
+  // fetch user auth status and cart data
+ const fetchUser = async () => {
+    try {
+      const {data} = await axios.get("/api/user/is-auth");
+      if (data.success) {
+        setUser(data.user);
+        setCartItems(data.user.cart);
+      } else {
+        setUser(null);
+        setCartItems({});
+      }
+    } catch (error) {
+      setUser(null);
+      setCartItems({});
+    }
+ }
+
+
   // fetech seller data if logged in
   const fetchSeller = async () => {
     try {
@@ -36,9 +54,19 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
+
   // Fetch products from a dummy data source or API
   const fetchProducts = async () => {
-    setProducts(dummyProducts);
+    try {
+      const {data} = await axios.get("/api/product/list");
+      if(data.success){
+        setProducts(data.products); 
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch products");
+    }
   };
 
   // Add Product to Cart
@@ -74,11 +102,6 @@ export const AppContextProvider = ({ children }) => {
     setCartItems(cartData);
   };
 
-  useEffect(() => {
-    fetchSeller();
-    fetchProducts();
-  }, []);
-
 
   // handle total cart items count in the header
   const getCartCount = () => {
@@ -102,6 +125,28 @@ export const AppContextProvider = ({ children }) => {
   }
 
 
+  useEffect(() => {
+    fetchSeller();
+    fetchUser();
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const updateCart = async () => {
+      try {
+        const { data } = await axios.post("/api/cart/update", { cartItems });
+        if (!data.success) {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error("Failed to update cart");
+      }
+    }
+    if (user) {
+      updateCart();
+    }
+  }, [cartItems]);
+
 
   const value = {
     navigate,
@@ -122,7 +167,8 @@ export const AppContextProvider = ({ children }) => {
     getCartCount,
     getCartAmount,
     axios,
-
+    fetchProducts,
+    fetchUser,
     
   };
 

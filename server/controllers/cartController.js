@@ -4,7 +4,8 @@ import userModel from "../models/userModel.js";
 
 export const updateCart = async (req, res) => {
     try {
-        const { userId, cartItems } = req.body;
+        const { cartItems } = req.body;
+        const userId = req.userId;
 
        await userModel.findByIdAndUpdate(userId, { cart: cartItems });
        res.status(200).json({ success: true, message: "Cart updated successfully." });   
