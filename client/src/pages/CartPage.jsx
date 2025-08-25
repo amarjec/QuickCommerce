@@ -2,16 +2,17 @@ import React, { useState } from 'react'
 import { useAppContext } from '../context/AppContext'
 import { assets, dummyAddress } from '../assets/assets';
 import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const CartPage = () => {
 
 
-    const { products, currency, cartItems, removeFromCart, updateCartItem, getCartCount, getCartAmount, navigate } = useAppContext();
+    const { products, currency, axios, user, cartItems, removeFromCart, updateCartItem, getCartCount, getCartAmount, navigate } = useAppContext();
 
     const [cartArray, setCartArray] = useState ([])
-    const [addresses, setAddresses] = useState (dummyAddress)
+    const [addresses, setAddresses] = useState ([])
     const [showAddress, setShowAddress] = useState(false);
-    const [selectedAddress, setSelectedAddress] = useState(dummyAddress[0]);
+    const [selectedAddress, setSelectedAddress] = useState(null);
     const [paymentOption, setPaymentOption] = useState('COD');
 
     const getCart = () => {
@@ -25,6 +26,22 @@ const CartPage = () => {
         }
         setCartArray(tempArray);
     } 
+
+    const getUserAddresses = async () => {
+        try {
+            const { data } = await axios.get('/api/address/get');
+            if (data.success) {
+                setAddresses(data.addresses);
+                if (data.addresses.length > 0) {
+                    setSelectedAddress(data.addresses[0]);
+                }
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }
 
     const placeOrder = async () => {
         //adding logic when we create backend
@@ -41,7 +58,11 @@ const CartPage = () => {
         }
     },[products, cartItems]);
 
-
+    useEffect(() => {
+       if (user) {
+        getUserAddresses();
+       }
+    },[user]);
 
 
 
