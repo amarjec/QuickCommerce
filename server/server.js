@@ -20,7 +20,7 @@ await ConnectDB();
 await connectCloudinary(); // Connect to Cloudinary
 
 
-const allowedOrigins = ['http://localhost:5173'];
+const allowedOrigins = ['http://localhost:5173', 'https://quickcommerce-frontend.onrender.com'];
 
 
 // Middleware to parse JSON requests
