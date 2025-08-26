@@ -235,7 +235,7 @@ export const dummyProducts = [
     updatedAt: "2025-03-25T07:18:13.103Z",
     inStock: true,
   },
-  {
+{
     _id: "gd48g45h",
     name: "Carrot 500g",
     category: "Vegetables",

@@ -37,6 +37,12 @@ const Navbar = () => {
                 <img className="h-9" src={assets.logo} alt="logo" />
             </NavLink>
 
+            {!user && (
+                <div 
+            className='cursor-pointer text-xs font-light hidden lg:block border border-gray-300 px-3 py-1 rounded-full hover:bg-gray-100'
+            onClick={() => navigate('/seller')}>Seller Dashboard</div>
+            )}
+
             {/* Desktop Menu */}
             <div className="hidden sm:flex items-center gap-8">
                 <NavLink to="/" >Home</NavLink>
